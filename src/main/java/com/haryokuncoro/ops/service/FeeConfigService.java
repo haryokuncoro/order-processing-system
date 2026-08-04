@@ -19,11 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FeeConfigService {
     private final MerchantRepository merchantRepository;
     private final FeeConfigRepository repository;
+
+    public FeeConfigService(MerchantRepository merchantRepository, FeeConfigRepository repository) {
+        this.merchantRepository = merchantRepository;
+        this.repository = repository;
+    }
 
     @Transactional
     public GetFeeConfigResponse create(CreateFeeConfigRequest request){

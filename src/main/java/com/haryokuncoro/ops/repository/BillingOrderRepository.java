@@ -40,5 +40,6 @@ public interface BillingOrderRepository extends JpaRepository<BillingOrder, UUID
             Instant periodStart,
             Instant periodEnd
     );
+    List<BillingOrder> findByPayoutId(UUID payoutId);
 
 }

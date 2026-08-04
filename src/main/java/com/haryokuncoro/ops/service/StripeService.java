@@ -141,6 +141,36 @@ public class StripeService {
     }
 
     @Transactional
+    public void cancelPayout(com.haryokuncoro.ops.entity.Payout payoutEntity) throws StripeException {
+        String apiKey = stripeKeyResolver.resolveApiKey(payoutEntity.getCurrency());
+        String connectedAccountId = payoutEntity.getMerchant().getStripeAccountId();
+        RequestOptions options = RequestOptions.builder()
+                .setApiKey(apiKey)
+                .setStripeAccount(connectedAccountId)
+                .build();
+        Payout stripePayout;
+        try {
+            stripePayout = Payout.retrieve(payoutEntity.getStripePayoutId(), options);
+            stripePayout.cancel();
+            PayoutTransaction failedTransaction = PayoutTransaction.builder()
+                    .transactionType(TransactionType.PAYOUT)
+                    .payout(payoutEntity)
+                    .referenceId(stripePayout.getId())
+                    .amount(payoutEntity.getPayoutAmount())
+                    .status(PayoutStatus.CANCELLED)
+                    .build();
+            payoutTransactionRepository.save(failedTransaction);
+        } catch (StripeException e) {
+            log.error(
+                    "Failed to cancel Payout. payoutEntityId={}, account={}, amount={}, code={}, message={}",
+                    payoutEntity.getId(), connectedAccountId, payoutEntity.getPayoutAmount(), e.getCode(), e.getMessage(), e
+            );
+            throw e;
+        }
+
+    }
+
+    @Transactional
     public void handleWebhook(String payload, String signature, String webhookSecret) {
 
         Event event;

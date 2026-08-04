@@ -6,12 +6,14 @@ import com.haryokuncoro.ops.dto.CreatePayoutRequest;
 import com.haryokuncoro.ops.dto.GetPayoutResponse;
 import com.haryokuncoro.ops.service.PayoutService;
 import com.haryokuncoro.ops.util.ResponseUtil;
+import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,5 +59,11 @@ public class PayoutController {
                 status,
                 pageable);
         return ResponseUtil.success(resp);
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ApiResponse cancelPayout(@PathVariable UUID id) {
+        payoutService.cancelPayout(id);
+        return ResponseUtil.success("payout cancelled successfully");
     }
 }

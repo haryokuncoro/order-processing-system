@@ -15,13 +15,17 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FeeService {
     private static final int SCALE = 2;
 
     private final FeeConfigRepository feeConfigRepository;
     private final FeeTransactionRepository feeTransactionRepository;
+
+    public FeeService(FeeConfigRepository feeConfigRepository, FeeTransactionRepository feeTransactionRepository) {
+        this.feeConfigRepository = feeConfigRepository;
+        this.feeTransactionRepository = feeTransactionRepository;
+    }
 
     @Transactional
     public void generateOrderFees(BillingOrder order) {

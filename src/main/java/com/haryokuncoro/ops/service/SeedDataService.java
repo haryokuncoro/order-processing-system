@@ -20,12 +20,17 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-@RequiredArgsConstructor
 public class SeedDataService {
 
     private final MerchantRepository merchantRepository;
     private final FeeConfigRepository feeConfigRepository;
     private final OrderService orderService;
+
+    public SeedDataService(MerchantRepository merchantRepository, FeeConfigRepository feeConfigRepository, OrderService orderService) {
+        this.merchantRepository = merchantRepository;
+        this.feeConfigRepository = feeConfigRepository;
+        this.orderService = orderService;
+    }
 
     @Transactional
     public SeedResponse seed() {

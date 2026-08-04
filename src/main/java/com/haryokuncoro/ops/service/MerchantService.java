@@ -16,11 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class MerchantService {
 
     private final MerchantRepository merchantRepository;
+
+    public MerchantService(MerchantRepository merchantRepository) {
+        this.merchantRepository = merchantRepository;
+    }
 
     public Page<Merchant> getAllMerchants(
             String name, String email, String stripeAccountId,

@@ -19,7 +19,6 @@ import com.haryokuncoro.ops.repository.MerchantRepository;
 import com.haryokuncoro.ops.repository.PayoutRepository;
 import com.haryokuncoro.ops.repository.PayoutTransactionRepository;
 import com.stripe.exception.StripeException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Service @Slf4j
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PayoutService {
     private final StripeService stripeService;
@@ -47,6 +45,24 @@ public class PayoutService {
     private final PayoutEventPublisher publisher;
     private final StripePayoutEventPublisher stripePayoutEventPublisher;
 
+
+    public PayoutService(StripeService stripeService,
+                         FeeService feeService,
+                         MerchantRepository merchantRepository,
+                         BillingOrderRepository orderRepository,
+                         PayoutRepository payoutRepository,
+                         PayoutTransactionRepository payoutTransactionRepository,
+                         PayoutEventPublisher publisher,
+                         StripePayoutEventPublisher stripePayoutEventPublisher) {
+        this.stripeService = stripeService;
+        this.feeService = feeService;
+        this.merchantRepository = merchantRepository;
+        this.orderRepository = orderRepository;
+        this.payoutRepository = payoutRepository;
+        this.payoutTransactionRepository = payoutTransactionRepository;
+        this.publisher = publisher;
+        this.stripePayoutEventPublisher = stripePayoutEventPublisher;
+    }
 
     @Transactional
     public Payout triggerPayout(CreatePayoutRequest request) {
@@ -252,6 +268,24 @@ public class PayoutService {
                 .payoutDate(payout.getPayoutDate())
                 .status(payout.getStatus())
                 .build();
+    }
+
+    @Transactional
+    public void cancelPayout(UUID payoutId) {
+        Payout payout = payoutRepository.findById(payoutId)
+                .orElseThrow(() -> new NotFoundException("Payout not found"));
+
+        if (payout.getStatus() != PayoutStatus.INITIATED || !payout.getStripePayoutId().startsWith("po")) {
+            throw new IllegalStateException("Failed to cancel payout. Only INITIATED payouts can be cancelled");
+        }
+
+        try {
+            stripeService.cancelPayout(payout);
+        }catch (StripeException e){
+            throw new IllegalStateException("Failed to cancel payout", e);
+        }
+        payout.setStatus(PayoutStatus.CANCELLED);
+        payoutRepository.save(payout);
     }
 
 }
