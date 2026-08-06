@@ -1,13 +1,15 @@
 package com.haryokuncoro.ops.service;
 
 
+import com.haryokuncoro.ops.dto.CreateMerchantRequest;
+import com.haryokuncoro.ops.dto.UpdateMerchantRequest;
 import com.haryokuncoro.ops.dto.enums.MerchantStatus;
 import com.haryokuncoro.ops.dto.spec.MerchantSpecification;
 import com.haryokuncoro.ops.entity.Merchant;
 import com.haryokuncoro.ops.exception.BadRequestException;
 import com.haryokuncoro.ops.exception.NotFoundException;
 import com.haryokuncoro.ops.repository.MerchantRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true) @Slf4j
 public class MerchantService {
 
     private final MerchantRepository merchantRepository;
@@ -62,7 +64,7 @@ public class MerchantService {
     }
 
     @Transactional
-    public Merchant createMerchant(Merchant request) {
+    public Merchant createMerchant(CreateMerchantRequest request) {
 
         if (merchantRepository.existsByMerchantCode(request.getMerchantCode())) {
             throw new BadRequestException("Merchant code already exists");
@@ -74,16 +76,14 @@ public class MerchantService {
                 .stripeAccountId(request.getStripeAccountId())
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .status(request.getStatus() != null
-                        ? request.getStatus()
-                        : MerchantStatus.ACTIVE)
+                .status(MerchantStatus.ACTIVE)
                 .build();
 
         return merchantRepository.save(merchant);
     }
 
     @Transactional
-    public Merchant updateMerchant(UUID id, Merchant request) {
+    public Merchant updateMerchant(UUID id, UpdateMerchantRequest request) {
 
         Merchant merchant = merchantRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Merchant not found"));
@@ -93,12 +93,11 @@ public class MerchantService {
             throw new BadRequestException("Merchant code already exists");
         }
 
+
         merchant.setMerchantCode(request.getMerchantCode());
         merchant.setMerchantName(request.getMerchantName());
-        merchant.setStripeAccountId(request.getStripeAccountId());
         merchant.setEmail(request.getEmail());
         merchant.setPhone(request.getPhone());
-        merchant.setStatus(request.getStatus());
 
         return merchantRepository.save(merchant);
     }
