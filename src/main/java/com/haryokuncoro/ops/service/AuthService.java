@@ -1,7 +1,10 @@
 package com.haryokuncoro.ops.service;
 
+import com.haryokuncoro.ops.dto.RegisterRequest;
 import com.haryokuncoro.ops.entity.User;
 import com.haryokuncoro.ops.exception.BadRequestException;
+import com.haryokuncoro.ops.exception.NotFoundException;
+import com.haryokuncoro.ops.exception.UnauthorizedException;
 import com.haryokuncoro.ops.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,9 +27,11 @@ public class AuthService {
     }
 
     @Transactional
-    public String register(String email, String password) {
+    public String register(RegisterRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
         userRepo.findByEmail(email).ifPresent(u -> {
-            throw new BadRequestException("Invalid request");
+            throw new BadRequestException("User already registered. Please Login");
         });
 
         if (!password.matches("^(?=.*[A-Z])(?=.*\\d).{8,}$")) {
@@ -34,6 +39,7 @@ public class AuthService {
         }
 
         User user = new User();
+        user.setUsername(request.getUsername());
         user.setEmail(email);
         user.setPassword(encoder.encode(password));
         user.setEnabled(true);
@@ -43,10 +49,10 @@ public class AuthService {
 
     public String login(String email, String password) {
         User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (!encoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new UnauthorizedException("Wrong Username or password");
         }
         return jwtService.generate(user.getId());
     }

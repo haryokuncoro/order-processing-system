@@ -31,19 +31,20 @@ class AuthControllerTest {
     @Test
     void register_ShouldReturnToken() {
 
-        // Arrange
-        RegisterRequest request = new RegisterRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password123");
+        RegisterRequest request = RegisterRequest.builder()
+                .username("test")
+                .email("test@example.com")
+                .password("password123")
+                .build();
 
-        when(authService.register("test@example.com", "password123"))
+        when(authService.register(request))
                 .thenReturn("jwt-token");
 
         // Act
         ApiResponse response = authController.register(request, servletRequest);
 
         // Assert
-        verify(authService).register("test@example.com", "password123");
+        verify(authService).register(request);
 
         assertTrue(response.isSuccess());
 

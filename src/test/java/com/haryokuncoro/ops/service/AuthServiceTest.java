@@ -1,5 +1,6 @@
 package com.haryokuncoro.ops.service;
 
+import com.haryokuncoro.ops.dto.RegisterRequest;
 import com.haryokuncoro.ops.entity.User;
 import com.haryokuncoro.ops.exception.BadRequestException;
 import com.haryokuncoro.ops.repository.UserRepository;
@@ -44,6 +45,7 @@ class AuthServiceTest {
     @Test
     void register_ShouldRegisterUserSuccessfully() {
 
+        String username = "test";
         String email = "test@example.com";
         String password = "Password1";
         String encodedPassword = "encoded-password";
@@ -60,7 +62,13 @@ class AuthServiceTest {
 
         when(jwtService.generate(userId)).thenReturn(token);
 
-        String result = authService.register(email, password);
+        String result = authService.register(
+                RegisterRequest.builder()
+                        .username(username)
+                        .email(email)
+                        .password(password)
+                        .build()
+        );
 
         assertEquals(token, result);
 
@@ -79,18 +87,23 @@ class AuthServiceTest {
     void register_ShouldThrow_WhenEmailAlreadyExists() {
 
         String email = "test@example.com";
+        String username = "test";
 
         User existing = new User();
         existing.setEmail(email);
 
         when(userRepo.findByEmail(email)).thenReturn(Optional.of(existing));
-
+        RegisterRequest request = RegisterRequest.builder()
+                .username(username)
+                .email(email)
+                .password("Password1")
+                .build();
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> authService.register(email, "Password1")
+                () -> authService.register(request)
         );
 
-        assertEquals("Invalid request", ex.getMessage());
+        assertEquals("User already registered. Please Login", ex.getMessage());
 
         verify(userRepo, never()).save(any());
         verify(jwtService, never()).generate(any());
@@ -102,10 +115,14 @@ class AuthServiceTest {
         String email = "test@example.com";
 
         when(userRepo.findByEmail(email)).thenReturn(Optional.empty());
-
+        RegisterRequest request = RegisterRequest.builder()
+                .username("username")
+                .email(email)
+                .password("weak")
+                .build();
         BadRequestException ex = assertThrows(
                 BadRequestException.class,
-                () -> authService.register(email, "weak")
+                () -> authService.register(request)
         );
 
         assertEquals("Weak password", ex.getMessage());
@@ -172,7 +189,7 @@ class AuthServiceTest {
                 () -> authService.login(email, "Password1")
         );
 
-        assertEquals("Invalid password", ex.getMessage());
+        assertEquals("Wrong Username or password", ex.getMessage());
 
         verify(jwtService, never()).generate(any());
     }
