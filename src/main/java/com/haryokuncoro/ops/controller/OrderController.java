@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,13 +27,13 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ApiResponse create(@RequestBody CreateOrderRequest request) {
+    public ApiResponse<Void> create(@RequestBody CreateOrderRequest request) {
         String orderNumber = orderService.publishOrder(request);
         return ResponseUtil.success(orderNumber);
     }
 
     @GetMapping
-    public ApiResponse getBillingOrders(
+    public ApiResponse<Page<GetOrderResponse>> getBillingOrders(
             @RequestParam(required = false) UUID merchantId,
             @RequestParam(required = false) String orderNo,
             @RequestParam(required = false) String stripePaymentIntentId,

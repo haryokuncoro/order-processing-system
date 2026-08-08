@@ -2,6 +2,7 @@ package com.haryokuncoro.ops.service;
 
 
 import com.haryokuncoro.ops.dto.CreateMerchantRequest;
+import com.haryokuncoro.ops.dto.GetMerchantResponse;
 import com.haryokuncoro.ops.dto.UpdateMerchantRequest;
 import com.haryokuncoro.ops.dto.enums.MerchantStatus;
 import com.haryokuncoro.ops.dto.spec.MerchantSpecification;
@@ -58,13 +59,25 @@ public class MerchantService {
 
     }
 
-    public Merchant getMerchant(UUID id) {
-        return merchantRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Merchant not found"));
+    public GetMerchantResponse getMerchant(UUID id) {
+        return mapToResponse(merchantRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Merchant not found")));
+    }
+
+    private GetMerchantResponse mapToResponse(Merchant merchant) {
+        return GetMerchantResponse.builder()
+                .id(merchant.getId())
+                .merchantCode(merchant.getMerchantCode())
+                .merchantName(merchant.getMerchantName())
+                .stripeAccountId(merchant.getStripeAccountId())
+                .email(merchant.getEmail())
+                .phone(merchant.getPhone())
+                .status(merchant.getStatus())
+                .build();
     }
 
     @Transactional
-    public Merchant createMerchant(CreateMerchantRequest request) {
+    public GetMerchantResponse createMerchant(CreateMerchantRequest request) {
 
         if (merchantRepository.existsByMerchantCode(request.getMerchantCode())) {
             throw new BadRequestException("Merchant code already exists");
@@ -79,11 +92,12 @@ public class MerchantService {
                 .status(MerchantStatus.ACTIVE)
                 .build();
 
-        return merchantRepository.save(merchant);
+        merchant = merchantRepository.save(merchant);
+        return mapToResponse(merchant);
     }
 
     @Transactional
-    public Merchant updateMerchant(UUID id, UpdateMerchantRequest request) {
+    public GetMerchantResponse updateMerchant(UUID id, UpdateMerchantRequest request) {
 
         Merchant merchant = merchantRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Merchant not found"));
@@ -99,7 +113,8 @@ public class MerchantService {
         merchant.setEmail(request.getEmail());
         merchant.setPhone(request.getPhone());
 
-        return merchantRepository.save(merchant);
+        merchant = merchantRepository.save(merchant);
+        return mapToResponse(merchant);
     }
 
     @Transactional

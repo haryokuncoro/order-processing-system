@@ -6,7 +6,6 @@ import com.haryokuncoro.ops.dto.CreatePayoutRequest;
 import com.haryokuncoro.ops.dto.GetPayoutResponse;
 import com.haryokuncoro.ops.service.PayoutService;
 import com.haryokuncoro.ops.util.ResponseUtil;
-import com.stripe.exception.StripeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,19 +29,19 @@ public class PayoutController {
     private final PayoutService payoutService;
 
     @PostMapping
-    public ApiResponse create(@RequestBody CreatePayoutRequest request) {
+    public ApiResponse<Void> create(@RequestBody CreatePayoutRequest request) {
         payoutService.triggerPayout(request);
         return ResponseUtil.success("finished payout");
     }
 
     @PostMapping("/jobs")
-    public ApiResponse publishPayoutJobs(@RequestBody CreatePayoutJobRequest request) {
+    public ApiResponse<Void> publishPayoutJobs(@RequestBody CreatePayoutJobRequest request) {
         payoutService.publishPayoutJobs(request);
         return ResponseUtil.success("finished publish payout jobs");
     }
 
     @GetMapping
-    public ApiResponse getPayouts(
+    public ApiResponse<Page<GetPayoutResponse>> getPayouts(
             @RequestParam(required = false) UUID merchantId,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
@@ -62,7 +61,7 @@ public class PayoutController {
     }
 
     @PostMapping("/{id}/cancel")
-    public ApiResponse cancelPayout(@PathVariable UUID id) {
+    public ApiResponse<Void> cancelPayout(@PathVariable UUID id) {
         payoutService.cancelPayout(id);
         return ResponseUtil.success("payout cancelled successfully");
     }

@@ -23,13 +23,13 @@ public class DlqAdminController {
     private final DlqReplayService replayService;
 
     @PostMapping("/replay/{eventId}")
-    public ApiResponse replay(@PathVariable String eventId) throws Exception {
+    public ApiResponse<Void> replay(@PathVariable String eventId) throws Exception {
         replayService.replay(eventId);
         return ResponseUtil.success("Replay triggered");
     }
 
     @GetMapping
-    public ApiResponse findAll(@RequestParam(required = false) String topic) {
+    public ApiResponse<List<FailedEvent>> findAll(@RequestParam(required = false) String topic) {
         List<FailedEvent> events = replayService.findAll(topic);
         return ResponseUtil.success(events);
     }

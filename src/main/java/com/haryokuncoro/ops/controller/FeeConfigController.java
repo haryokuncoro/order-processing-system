@@ -25,31 +25,31 @@ public class FeeConfigController {
     private final FeeConfigService feeConfigService;
 
     @PostMapping
-    public ApiResponse create(@Valid @RequestBody CreateFeeConfigRequest request) {
+    public ApiResponse<GetFeeConfigResponse> create(@Valid @RequestBody CreateFeeConfigRequest request) {
         GetFeeConfigResponse resp = feeConfigService.create(request);
         return ResponseUtil.success(resp);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateFeeConfigRequest request) {
+    public ApiResponse<GetFeeConfigResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateFeeConfigRequest request) {
         GetFeeConfigResponse resp = feeConfigService.update(id, request);
         return ResponseUtil.success(resp);
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse delete(@PathVariable UUID id) {
+    public ApiResponse<Void> delete(@PathVariable UUID id) {
         feeConfigService.delete(id);
         return ResponseUtil.success("fee config deleted successfully");
     }
 
     @GetMapping("/{id}")
-    public ApiResponse get(@PathVariable UUID id) {
+    public ApiResponse<GetFeeConfigResponse> get(@PathVariable UUID id) {
         GetFeeConfigResponse resp = feeConfigService.get(id);
         return ResponseUtil.success(resp);
     }
 
     @GetMapping
-    public ApiResponse getAll(
+    public ApiResponse<Page<GetFeeConfigResponse>> getAll(
             @RequestParam(required = false) UUID merchantId,
             @RequestParam(required = false) Boolean active,
             @RequestParam(defaultValue = "0") int page,

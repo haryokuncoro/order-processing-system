@@ -27,14 +27,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ApiResponse register(@RequestBody RegisterRequest request, HttpServletRequest servletRequest) {
+    public ApiResponse<Map<String, Object>> register(@RequestBody RegisterRequest request, HttpServletRequest servletRequest) {
         String token = authService.register(request);
         Map<String, Object> resp = Map.of("token", token);
         return ResponseUtil.success(resp);
     }
 
     @PostMapping("/login")
-    public ApiResponse login(@RequestBody LoginRequest req, HttpServletRequest servletRequest) {
+    public ApiResponse<Map<String, Object>> login(@RequestBody LoginRequest req, HttpServletRequest servletRequest) {
         String token = authService.login(req.getEmail(), req.getPassword());
         Map<String, Object> resp = Map.of("token", token);
         return ResponseUtil.success(resp);

@@ -3,6 +3,7 @@ package com.haryokuncoro.ops.controller;
 
 import com.haryokuncoro.ops.dto.ApiResponse;
 import com.haryokuncoro.ops.dto.CreateMerchantRequest;
+import com.haryokuncoro.ops.dto.GetMerchantResponse;
 import com.haryokuncoro.ops.dto.UpdateMerchantRequest;
 import com.haryokuncoro.ops.entity.Merchant;
 import com.haryokuncoro.ops.service.MerchantService;
@@ -29,7 +30,7 @@ public class MerchantController {
     }
 
     @GetMapping
-    public ApiResponse getAllMerchants(
+    public ApiResponse<Page<Merchant>> getAllMerchants(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String stripeAccountId,
@@ -47,17 +48,17 @@ public class MerchantController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse getMerchant(@PathVariable UUID id) {
+    public ApiResponse<GetMerchantResponse> getMerchant(@PathVariable UUID id) {
         return ResponseUtil.success(merchantService.getMerchant(id));
     }
 
     @PostMapping
-    public ApiResponse createMerchant(@RequestBody CreateMerchantRequest request) {
+    public ApiResponse<GetMerchantResponse> createMerchant(@RequestBody CreateMerchantRequest request) {
         return ResponseUtil.success(merchantService.createMerchant(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse updateMerchant(
+    public ApiResponse<GetMerchantResponse> updateMerchant(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateMerchantRequest request) {
         log.info( "id={} requet={}", id, request);
@@ -65,7 +66,7 @@ public class MerchantController {
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse deleteMerchant(@PathVariable UUID id) {
+    public ApiResponse<Void> deleteMerchant(@PathVariable UUID id) {
         merchantService.deleteMerchant(id);
         return ResponseUtil.success("merchant deleted successfully");
     }
